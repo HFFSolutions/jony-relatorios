@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Relatórios — Jony Marcondes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+/* ── TOKENS ─────────────────────────── */
+:root{
+  --bg:     #050507;
+  --sf0:    #08090c;
+  --sf1:    #0d0f14;
+  --sf2:    #13161d;
+  --sf3:    #191d26;
+  --bd:     #1e2d3d;
+  --bd2:    #263545;
+  --bl:     #1e8ec4;
+  --bl2:    #156ea0;
+  --bl-dim: rgba(30,142,196,.12);
+  --bl-glo: rgba(30,142,196,.25);
+  --rd:     #c02828;
+  --rd-dim: rgba(192,40,40,.12);
+  --gn:     #27a96e;
+  --or:     #d08820;
+  --pu:     #8844d0;
+  --mu:     #5a6e7a;
+  --mu2:    #7a8e9a;
+  --tx:     #c8d8e0;
+  --tx2:    #e8f0f4;
+  --wh:     #ffffff;
+  --r6:6px; --r8:8px; --r12:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--tx);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;line-height:1.6;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── SCROLLBAR ──────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--sf1)}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--bl2)}
+
+/* ════════════════════════════════════
+   LOGIN
+════════════════════════════════════ */
+#login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;position:relative;overflow:hidden;
+  background: radial-gradient(ellipse 80% 80% at 20% 30%, #0a1e30 0%, transparent 60%),
+              radial-gradient(ellipse 60% 60% at 80% 70%, #1a0a10 0%, transparent 60%),
+              var(--bg);
+}
+.login-glow{
+  position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle, var(--bl-glo) 0%, transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+  animation:breathe 4s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+.lcard{
+  background:linear-gradient(145deg, var(--sf2) 0%, var(--sf1) 100%);
+  border:1px solid var(--bd2);border-radius:16px;
+  padding:48px 44px;width:100%;max-width:400px;position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(30,142,196,.08);
+}
+.lcard::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,rgba(30,142,196,.06) 0%,transparent 50%);
+  pointer-events:none;
+}
+.lhead{text-align:center;margin-bottom:36px}
+.lbat{font-size:36px;display:block;margin-bottom:14px;filter:drop-shadow(0 0 12px rgba(30,142,196,.4))}
+.lname{font-size:24px;font-weight:800;color:var(--wh);letter-spacing:-1px;line-height:1.2}
+.lname em{color:var(--bl);font-style:normal}
+.lsub{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--mu);margin-top:6px}
+.ldiv{height:1px;background:linear-gradient(90deg,transparent,var(--bd2),transparent);margin:24px 0}
+
+.lfield{margin-bottom:16px}
+.lfield label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mu2);margin-bottom:8px}
+.lfield input{
+  width:100%;background:var(--sf3);border:1px solid var(--bd);border-radius:var(--r8);
+  padding:12px 16px;color:var(--wh);font-size:14px;font-family:'Inter',sans-serif;
+  outline:none;transition:border-color .2s, box-shadow .2s;
+}
+.lfield input::placeholder{color:var(--mu)}
+.lfield input:focus{border-color:var(--bl);box-shadow:0 0 0 3px var(--bl-dim)}
+
+.lerr{
+  background:rgba(192,40,40,.12);border:1px solid rgba(192,40,40,.3);border-radius:var(--r6);
+  color:#e08080;font-size:12px;padding:10px 14px;margin-bottom:14px;display:none;
+  animation:shake .3s ease;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.lbtn{
+  width:100%;padding:14px;margin-top:4px;border:none;border-radius:var(--r8);
+  background:linear-gradient(135deg,var(--bl) 0%,var(--bl2) 100%);
+  color:var(--wh);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;
+  cursor:pointer;letter-spacing:.3px;
+  box-shadow:0 4px 20px rgba(30,142,196,.3);
+  transition:transform .15s, box-shadow .2s, filter .2s;
+}
+.lbtn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(30,142,196,.45);filter:brightness(1.1)}
+.lbtn:active{transform:translateY(0);box-shadow:0 2px 10px rgba(30,142,196,.2)}
+
+.lfooter{text-align:center;font-size:11px;color:var(--mu);margin-top:24px}
+.lfooter strong{color:var(--bd2)}
+
+.lcreds{
+  background:var(--sf3);border:1px solid var(--bd);border-radius:var(--r6);
+  padding:10px 14px;margin-top:16px;font-size:11px;color:var(--mu2);line-height:1.8;
+}
+.lcreds code{color:var(--bl);background:var(--bl-dim);padding:1px 5px;border-radius:3px;font-family:monospace}
+
+/* ════════════════════════════════════
+   APP SHELL
+════════════════════════════════════ */
+#app{display:none;min-height:100vh;flex-direction:column}
+
+/* TOPBAR */
+.topbar{
+  height:56px;border-bottom:1px solid var(--bd);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  background:rgba(5,5,7,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.tb-left{display:flex;align-items:center;gap:14px}
+.tb-logo{font-size:15px;font-weight:800;color:var(--wh);letter-spacing:-.5px}
+.tb-logo em{color:var(--bl);font-style:normal}
+.tb-tag{
+  font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--mu);background:var(--sf2);border:1px solid var(--bd);
+  padding:3px 9px;border-radius:20px;
+}
+.tb-right{display:flex;align-items:center;gap:16px}
+.tb-user{font-size:12px;color:var(--mu2);font-weight:500}
+.tb-out{
+  background:transparent;border:1px solid var(--bd);border-radius:var(--r6);
+  color:var(--mu);font-size:12px;font-weight:500;padding:5px 14px;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all .2s;
+}
+.tb-out:hover{border-color:var(--rd);color:var(--rd)}
+
+/* TABS */
+.tabsbar{
+  background:var(--sf0);border-bottom:1px solid var(--bd);
+  padding:0 28px;display:flex;gap:0;
+  position:relative;overflow-x:auto;
+}
+.tabsbar::-webkit-scrollbar{height:0}
+.tabslider{
+  position:absolute;bottom:0;left:0;height:2px;background:var(--bl);
+  border-radius:2px 2px 0 0;transition:all .25s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 12px var(--bl-glo);
+}
+.tbtn{
+  padding:16px 22px;font-size:13px;font-weight:600;color:var(--mu);
+  background:none;border:none;cursor:pointer;white-space:nowrap;
+  font-family:'Inter',sans-serif;
+  transition:color .2s;position:relative;
+  display:flex;align-items:center;gap:8px;
+}
+.tbtn:hover{color:var(--tx)}
+.tbtn.act{color:var(--tx2);font-weight:700}
+.tbtn .pill{
+  font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;
+  background:var(--sf2);color:var(--mu);transition:all .2s;letter-spacing:.3px;
+}
+.tbtn.act .pill{background:var(--bl-dim);color:var(--bl)}
+
+/* TAB CONTENT */
+.tc{display:none;padding:28px;max-width:1320px;margin:0 auto;width:100%}
+.tc.act{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ════════════════════════════════════
+   COMPONENTS
+════════════════════════════════════ */
+
+/* PHASE BANNER */
+.phase{
+  background:linear-gradient(135deg,rgba(30,142,196,.08) 0%,rgba(5,5,7,0) 60%);
+  border:1px solid var(--bd2);border-radius:var(--r12);
+  padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:28px;
+  position:relative;overflow:hidden;
+}
+.phase::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bl);border-radius:0 2px 2px 0}
+.phase.grey::after{background:#2a3a42}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pdot.on{background:var(--gn);box-shadow:0 0 0 3px rgba(39,169,110,.2);animation:pulse 2s infinite}
+.pdot.off{background:#2a3a42}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(39,169,110,.2)}50%{box-shadow:0 0 0 6px rgba(39,169,110,.1)}}
+.ph-t{font-size:13px;font-weight:700;color:var(--wh);margin-bottom:2px}
+.ph-s{font-size:12px;color:var(--mu2)}
+
+/* SECTION */
+.sec{margin-bottom:32px}
+.stitle{
+  font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--bl);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+}
+.stitle::before{content:'';display:inline-block;width:3px;height:14px;background:var(--bl);border-radius:2px;flex-shrink:0}
+
+/* GRID */
+.g1{display:grid;gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.span2{grid-column:span 2}.span3{grid-column:span 3}
+
+/* KPI */
+.kpi{
+  background:var(--sf1);border:1px solid var(--bd);border-radius:var(--r12);
+  padding:20px 18px;position:relative;overflow:hidden;
+  transition:border-color .2s, transform .2s, box-shadow .2s;cursor:default;
+}
+.kpi:hover{border-color:var(--bd2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r12) var(--r12) 0 0}
+.kpi.k-bl::before{background:linear-gradient(90deg,var(--bl),var(--bl2))}
+.kpi.k-rd::before{background:linear-gradient(90deg,var(--rd),#962020)}
+.kpi.k-gn::before{background:linear-gradient(90deg,var(--gn),#1e8054)}
+.kpi.k-gr::before{background:linear-gradient(90deg,#2a3a42,#1a2832)}
+.kpi.k-or::before{background:linear-gradient(90deg,var(--or),#a06810)}
+.klbl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.kval{font-size:26px;font-weight:800;color:var(--wh);letter-spacing:-1px;line-height:1;margin-bottom:4px}
+.ksub{font-size:11px;color:var(--mu2);margin-bottom:8px}
+.ktag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.3px}
+.k-up{background:rgba(39,169,110,.15);color:#5ddc9a}
+.k-dn{background:rgba(192,40,40,.15);color:#e07070}
+.k-nl{background:rgba(30,142,196,.15);color:#6ab8dc}
+.k-zr{background:rgba(255,255,255,.05);color:var(--mu)}
+
+/* CARD */
+.card{
+  background:var(--sf1);border:1px solid var(--bd);border-radius:var(--r12);padding:22px;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--bd2)}
+.card-h{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.ch{position:relative}
+.ch200{height:200px}.ch240{height:240px}.ch260{height:260px}.ch280{height:280px}.ch300{height:300px}.ch320{height:320px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r8)}
+table.dt{width:100%;border-collapse:collapse;min-width:500px}
+table.dt th{
+  text-align:left;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--mu);padding:10px 12px;border-bottom:1px solid var(--bd);background:var(--sf2);
+  white-space:nowrap;
+}
+table.dt th:first-child{border-radius:var(--r6) 0 0 0}
+table.dt th:last-child{border-radius:0 var(--r6) 0 0}
+table.dt td{padding:11px 12px;border-bottom:1px solid rgba(30,45,61,.5);font-size:13px;vertical-align:middle;transition:background .15s}
+table.dt tr:last-child td{border-bottom:none}
+table.dt tr:hover td{background:var(--sf2)}
+table.dt tbody tr:nth-child(even) td{background:rgba(19,22,29,.4)}
+table.dt tbody tr:nth-child(even):hover td{background:var(--sf2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.5px;gap:4px}
+.b-reel{background:rgba(30,80,180,.2);color:#7a9aff;border:1px solid rgba(30,80,180,.25)}
+.b-foto{background:rgba(200,120,30,.2);color:#e8a060;border:1px solid rgba(200,120,30,.25)}
+.b-carr{background:rgba(130,60,200,.2);color:#c07aff;border:1px solid rgba(130,60,200,.25)}
+
+.bar-mini{height:3px;background:var(--bd);border-radius:2px;margin-top:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .3s}
+
+.flag{display:inline-flex;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin-left:4px;letter-spacing:.5px;vertical-align:middle}
+.f-top{background:var(--rd);color:var(--wh)}
+.f-pago{background:rgba(200,136,30,.2);color:#d0a030;border:1px solid rgba(200,136,30,.3)}
+.stv{font-weight:700;color:var(--tx2)}
+
+/* STATUS */
+.sts{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px}
+.sts-on{background:rgba(39,169,110,.12);color:#5ddc9a;border:1px solid rgba(39,169,110,.2)}
+.sts-on::before{content:'';width:5px;height:5px;border-radius:50%;background:#5ddc9a;animation:pulse-s 2s infinite}
+@keyframes pulse-s{0%,100%{opacity:1}50%{opacity:.4}}
+.sts-off{background:rgba(255,255,255,.04);color:var(--mu);border:1px solid var(--bd)}
+.sts-off::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--mu)}
+.cpv-g{color:#5ddc9a;font-weight:700}.cpv-m{color:var(--tx);font-weight:700}.cpv-b{color:#e07070;font-weight:700}
+
+/* INSIGHTS */
+.ig2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ic{background:var(--sf1);border:1px solid var(--bd);border-radius:var(--r12);padding:20px;position:relative;overflow:hidden}
+.ic::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.ic.ok::before{background:var(--gn)}.ic.al::before{background:var(--rd)}.ic.inf::before{background:var(--bl)}
+.ic h4{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);margin-bottom:12px}
+.ic ul{list-style:none;font-size:13px}
+.ic ul li{padding:4px 0;border-bottom:1px solid rgba(30,45,61,.4);color:var(--tx);line-height:1.5}
+.ic ul li:last-child{border-bottom:none}
+.ic ul li::before{content:'›';color:var(--bl);font-weight:700;margin-right:6px}
+.ic p{font-size:13px;line-height:1.7;color:var(--tx)}
+
+/* COMPARE CARDS */
+.cmp-card{background:var(--sf1);border:1px solid var(--bd);border-radius:var(--r12);padding:20px}
+.cmp-card h4{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);margin-bottom:16px}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(30,45,61,.4)}
+.mrow:last-child{border-bottom:none}
+.mlabel{font-size:12px;font-weight:500;color:var(--mu2)}
+.mvals{display:flex;align-items:center;gap:12px}
+.mmonth{text-align:right}
+.mmonth span{font-size:10px;color:var(--mu);display:block}
+.mmonth strong{font-size:15px;font-weight:700;color:var(--tx2)}
+.marrow{font-size:16px;color:var(--mu);font-weight:300}
+
+/* TOP POST compare */
+.tp-box{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r8);padding:16px}
+.tp-box.hl{border-color:rgba(30,142,196,.3);background:rgba(30,142,196,.04)}
+.tp-month{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.tp-title{font-size:13px;color:var(--tx);font-style:italic;margin-bottom:12px;line-height:1.5}
+.tp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tp-stat span{font-size:10px;color:var(--mu);display:block}
+.tp-stat strong{font-size:17px;font-weight:800;color:var(--tx2)}
+
+/* TIMELINE */
+.tl-card{
+  background:var(--sf1);border:1px solid var(--bd);border-radius:var(--r12);
+  padding:20px;position:relative;
+}
+.tl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r12) var(--r12) 0 0}
+.tl-card.past::before{background:#2a3a42}
+.tl-card.current::before{background:linear-gradient(90deg,var(--bl),var(--bl2))}
+.tl-card.future::before{background:linear-gradient(90deg,var(--rd),#962020)}
+.tl-head{font-size:12px;font-weight:700;color:var(--mu2);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.tl-item{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:13px;color:var(--tx)}
+.tl-item .ico{flex-shrink:0;margin-top:1px}
+
+/* FOOTER */
+.pfooter{border-top:1px solid var(--bd);padding:20px 28px;display:flex;justify-content:space-between;align-items:center;background:var(--sf0);font-size:11px;color:var(--mu);flex-wrap:wrap;gap:8px;margin-top:auto}
+.pfooter strong{color:var(--bl)}
+
+/* RESPONSIVE */
+@media(max-width:900px){.g3,.g4,.g5,.g6{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .g2,.g3,.g4,.g5,.g6,.ig2{grid-template-columns:1fr}
+  .span2,.span3{grid-column:span 1}
+  .tc{padding:16px}.topbar,.tabsbar{padding:0 14px}
+  .lcard{padding:32px 24px}
+  .kval{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ════════════════════════════════════════ -->
+<div id="login-wrap">
+  <div class="login-glow"></div>
+  <div class="lcard">
+    <div class="lhead">
+      <span class="lbat">🖤🦇</span>
+      <div class="lname">Jony <em>Marcondes</em></div>
+      <div class="lsub">Portal de Relatórios · HFF Solutions</div>
+    </div>
+    <div class="ldiv"></div>
+    <div class="lerr" id="lerr">Login ou senha incorretos. Tente novamente.</div>
+    <div class="lfield">
+      <label>Login</label>
+      <input type="text" id="iu" placeholder="usuário" autocomplete="username"/>
+    </div>
+    <div class="lfield">
+      <label>Senha</label>
+      <input type="password" id="ip" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="lbtn" onclick="doLogin()">Entrar no Portal</button>
+    <div class="lcreds">
+      <strong style="color:var(--mu2)">Credenciais de acesso:</strong><br/>
+      HFF Solutions → <code>hff</code> / <code>jony2026</code><br/>
+      Jony Marcondes → <code>jony</code> / <code>hff2026</code>
+    </div>
+    <div class="lfooter">Acesso restrito · <strong>HFF Solutions</strong></div>
+  </div>
+</div>
+
+<!-- ══ APP ═════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">Jony <em>Marcondes</em></div>
+      <div class="tb-tag">Relatórios 2026</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-user" id="ulabel"></span>
+      <button class="tb-out" onclick="doLogout()">Sair</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabsbar" id="tabsbar">
+    <div class="tabslider" id="slider"></div>
+    <button class="tbtn act" id="tb-geral" onclick="sw('geral')">
+      <span>Visão Geral</span><span class="pill">Mai–Jun</span>
+    </button>
+    <button class="tbtn" id="tb-maio" onclick="sw('maio')">
+      <span>Maio 2026</span><span class="pill">Orgânico</span>
+    </button>
+    <button class="tbtn" id="tb-junho" onclick="sw('junho')">
+      <span>Junho 2026</span><span class="pill">Org + Pago</span>
+    </button>
+  </nav>
+
+  <!-- ══ TAB: VISÃO GERAL ═══════════════════════════ -->
+  <div class="tc act" id="tc-geral">
+
+    <div class="phase">
+      <div class="pdot on"></div>
+      <div>
+        <div class="ph-t">Fase 1: Reconhecimento — Em execução</div>
+        <div class="ph-s">Mai = pré-fase (100% orgânico) · Jun = orgânico + R$169 ads · Fase 2 inicia Jul com lançamento Metástase 2</div>
+      </div>
+    </div>
+
+    <!-- Comparativo -->
+    <div class="sec">
+      <div class="stitle">Comparativo Instagram · Maio vs Junho</div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="cmp-card">
+          <h4>Métricas Principais</h4>
+          <div class="mrow"><span class="mlabel">Visualizações</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>6,1K</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>28,9K</strong></div><span class="ktag k-up">+375%</span></div></div>
+          <div class="mrow"><span class="mlabel">Alcance</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>852</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>15K</strong></div><span class="ktag k-up">+1.660%</span></div></div>
+          <div class="mrow"><span class="mlabel">Interações</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>493</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>1,6K</strong></div><span class="ktag k-up">+225%</span></div></div>
+          <div class="mrow"><span class="mlabel">Posts</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>3</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>16</strong></div><span class="ktag k-up">+433%</span></div></div>
+          <div class="mrow"><span class="mlabel">Novos Seguidores</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>—</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>+52</strong></div><span class="ktag k-nl">novo</span></div></div>
+          <div class="mrow"><span class="mlabel">Tráfego Pago</span><div class="mvals"><div class="mmonth"><span>Maio</span><strong>R$0</strong></div><span class="marrow">→</span><div class="mmonth"><span>Junho</span><strong>R$169</strong></div><span class="ktag k-nl">Fase 1</span></div></div>
+        </div>
+
+        <div class="cmp-card">
+          <h4>Top Post por Mês</h4>
+          <div class="tp-box" style="margin-bottom:10px">
+            <div class="tp-month" style="color:var(--mu)">MAIO · Sex 29/mai · Reel · Orgânico puro</div>
+            <div class="tp-title">"Alguns projetos chegam para marcar um tempo…"</div>
+            <div class="tp-stats">
+              <div class="tp-stat"><span>Views</span><strong>1K</strong></div>
+              <div class="tp-stat"><span>Alcance</span><strong>613</strong></div>
+              <div class="tp-stat"><span>Curtidas</span><strong>54</strong></div>
+              <div class="tp-stat"><span>Comp.</span><strong>7</strong></div>
+            </div>
+          </div>
+          <div class="tp-box hl">
+            <div class="tp-month" style="color:var(--bl)">JUNHO · Sex 5/jun · Reel · R$78,59 pago</div>
+            <div class="tp-title">"O The Cure não toca música, ele desenha o frio…"</div>
+            <div class="tp-stats">
+              <div class="tp-stat"><span>Views</span><strong>14,2K</strong></div>
+              <div class="tp-stat"><span>Alcance</span><strong>12,9K</strong></div>
+              <div class="tp-stat"><span>Curtidas</span><strong>183</strong></div>
+              <div class="tp-stat"><span>Comp.</span><strong>4</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:12px">
+        <div class="card">
+          <div class="card-h">Evolução — Visualizações · Alcance · Interações</div>
+          <div class="ch ch280"><canvas id="g-mom"></canvas></div>
+        </div>
+        <div class="g1">
+          <div class="card">
+            <div class="card-h">Posts Publicados</div>
+            <div class="ch ch120" style="height:120px"><canvas id="g-posts"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-h">Composição Views · Junho</div>
+            <div class="ch ch120" style="height:120px"><canvas id="g-donut"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Público -->
+    <div class="sec">
+      <div class="stitle">Público · Instagram (dados de Junho)</div>
+      <div class="g3">
+        <div class="card">
+          <div class="card-h">Gênero</div>
+          <div class="ch ch200"><canvas id="g-genero"></canvas></div>
+        </div>
+        <div class="card span2">
+          <div class="card-h">Faixa Etária</div>
+          <div class="ch ch200"><canvas id="g-idade"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="sec">
+      <div class="stitle">Linha do Tempo Estratégica</div>
+      <div class="g3">
+        <div class="tl-card past">
+          <div class="tl-head">Maio 2026</div>
+          <div class="tl-item"><span class="ico">📅</span><span>3 posts orgânicos (dias 25–29)</span></div>
+          <div class="tl-item"><span class="ico">📊</span><span>6,1K views · 852 alcance</span></div>
+          <div class="tl-item"><span class="ico">💰</span><span>R$0 investidos</span></div>
+          <div class="tl-item"><span class="ico">🔧</span><span>Estruturação de feed e voz</span></div>
+          <div style="margin-top:12px"><span class="ktag k-zr">Pré-Fase 1</span></div>
+        </div>
+        <div class="tl-card current">
+          <div class="tl-head">Junho 2026 · Atual</div>
+          <div class="tl-item"><span class="ico">📅</span><span>16 posts · cadência 3×/semana</span></div>
+          <div class="tl-item"><span class="ico">📊</span><span>28,9K views · 15K alcance</span></div>
+          <div class="tl-item"><span class="ico">💰</span><span>R$169 · 5 anúncios · CPV R$0,31</span></div>
+          <div class="tl-item"><span class="ico">👥</span><span>+52 seguidores · 722 visitas/perfil</span></div>
+          <div style="margin-top:12px"><span class="ktag k-nl">Fase 1 — Reconhecimento</span></div>
+        </div>
+        <div class="tl-card future" style="opacity:.75">
+          <div class="tl-head">Julho 2026 · Próximo</div>
+          <div class="tl-item"><span class="ico">🎵</span><span>Metástase 2 · 31/jul</span></div>
+          <div class="tl-item"><span class="ico">💾</span><span>Campanha pré-save Spotify</span></div>
+          <div class="tl-item"><span class="ico">🎯</span><span>Remarketing visitantes de junho</span></div>
+          <div class="tl-item"><span class="ico">🎸</span><span>"Amor Morte" + "Morto Vivo"</span></div>
+          <div style="margin-top:12px"><span class="ktag k-dn">Fase 2 — Conversão</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: MAIO ══════════════════════════════════ -->
+  <div class="tc" id="tc-maio">
+    <div class="phase grey">
+      <div class="pdot off"></div>
+      <div>
+        <div class="ph-t">Pré-Fase 1 — Estruturação · Maio 2026</div>
+        <div class="ph-s">3 posts orgânicos · zero anúncios · primeiras sementes do projeto Metástase</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Instagram · 1–31 Mai 2026 · 100% Orgânico</div>
+      <div class="g3" style="margin-bottom:12px">
+        <div class="kpi k-gr"><div class="klbl">Visualizações</div><div class="kval" data-target="6086" data-suffix="K" data-div="1000">—</div><div class="ksub">100% orgânico</div><span class="ktag k-up">+186% vs abr</span></div>
+        <div class="kpi k-gr"><div class="klbl">Alcance</div><div class="kval" data-target="852">—</div><div class="ksub">contas únicas</div><span class="ktag k-up">+155,1%</span></div>
+        <div class="kpi k-gr"><div class="klbl">Interações</div><div class="kval" data-target="493">—</div><div class="ksub">curtidas + comentários</div><span class="ktag k-up">+210,1%</span></div>
+        <div class="kpi k-gr"><div class="klbl">Posts</div><div class="kval">3</div><div class="ksub">dias 25–29 mai</div><span class="ktag k-nl">46 stories</span></div>
+        <div class="kpi k-gr"><div class="klbl">Tráfego Pago</div><div class="kval">R$0</div><div class="ksub">sem anúncios</div><span class="ktag k-zr">—</span></div>
+        <div class="kpi k-gr"><div class="klbl">Facebook</div><div class="kval">42</div><div class="ksub">views · 38 viewers</div><span class="ktag k-zr">orgânico</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Performance dos Posts · Maio 2026</div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="card"><div class="card-h">Visualizações por Post</div><div class="ch ch240"><canvas id="m-views"></canvas></div></div>
+        <div class="card"><div class="card-h">Curtidas por Post</div><div class="ch ch240"><canvas id="m-curt"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h">Todos os Posts — Maio 2026</div>
+        <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr><th>Post</th><th>Data</th><th>Formato</th><th>Views</th><th>Curtidas</th><th>Comp.</th></tr></thead>
+          <tbody>
+            <tr><td>Alguns projetos chegam para marcar um tempo… <span class="flag f-top">TOP</span></td><td>Sex 29/mai</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">1.000</span><div class="bar-mini"><div class="bar-fill" style="width:100%;background:var(--bl)"></div></div></td><td><span class="stv">54</span></td><td><span class="stv">7</span></td></tr>
+            <tr><td>A melancolia não precisa de tradução…</td><td>Qua 27/mai</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">724</span><div class="bar-mini"><div class="bar-fill" style="width:72.4%;background:var(--pu)"></div></div></td><td><span class="stv">30</span></td><td><span class="stv">2</span></td></tr>
+            <tr><td>Existe uma beleza estranha em sentir o…</td><td>Seg 25/mai</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">556</span><div class="bar-mini"><div class="bar-fill" style="width:55.6%;background:var(--or)"></div></div></td><td><span class="stv">51</span></td><td><span class="stv">0</span></td></tr>
+            <tr><td>O estranho peso de sentir… Se achou…</td><td>Seg 25/mai</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">205</span><div class="bar-mini"><div class="bar-fill" style="width:20.5%;background:var(--or)"></div></div></td><td><span class="stv">14</span></td><td><span class="stv">1</span></td></tr>
+            <tr><td>Metástase é meu projeto de música…</td><td>Sex 29/mai</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">168</span><div class="bar-mini"><div class="bar-fill" style="width:16.8%;background:var(--or)"></div></div></td><td><span class="stv">12</span></td><td><span class="stv">1</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Análise — Maio 2026</div>
+      <div class="ig2">
+        <div class="ic ok"><h4>✔ Pontos Positivos</h4><ul><li>Reel de estreia: <strong>1K views</strong> 100% orgânico</li><li>Taxa de curtida: 5,4% (média é 2–3%)</li><li>Foto "Existe uma beleza" — 51 curtidas em alcance pequeno</li><li>+210% interações vs abril sem nenhum real gasto</li></ul></div>
+        <div class="ic inf"><h4>📋 Contexto Estratégico</h4><ul><li>Mês zero — estruturação de feed e voz da marca</li><li>Apenas 3 posts nos últimos 5 dias do mês</li><li>Zero tráfego pago — 100% descoberta orgânica</li><li>Fase 1 (Reconhecimento + Ads) iniciou em Junho</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: JUNHO ═════════════════════════════════ -->
+  <div class="tc" id="tc-junho">
+    <div class="phase">
+      <div class="pdot on"></div>
+      <div>
+        <div class="ph-t">Fase 1: Reconhecimento — Em execução · Junho 2026</div>
+        <div class="ph-s">R$9/dia Meta Ads mirando visitas ao perfil IG · público de remarketing construído para lançamento Metástase 2 (31/jul)</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Instagram · 1–24 Jun 2026</div>
+      <div class="g3">
+        <div class="kpi k-bl"><div class="klbl">Visualizações</div><div class="kval" data-target="28937" data-suffix="K" data-div="1000">—</div><div class="ksub">14,9K org · 14,0K pago</div><span class="ktag k-up">+375% vs mai</span></div>
+        <div class="kpi k-bl"><div class="klbl">Alcance</div><div class="kval" data-target="15000" data-suffix="K" data-div="1000">—</div><div class="ksub">contas únicas alcançadas</div><span class="ktag k-up">+1.660%</span></div>
+        <div class="kpi k-bl"><div class="klbl">Interações</div><div class="kval" data-target="1600" data-suffix="K" data-div="1000">—</div><div class="ksub">curtidas + comentários + comp.</div><span class="ktag k-up">+225%</span></div>
+        <div class="kpi k-rd"><div class="klbl">Visitas ao Perfil</div><div class="kval" data-target="722">—</div><div class="ksub">orgânico + pago</div><span class="ktag k-up">+235,8%</span></div>
+        <div class="kpi k-gn"><div class="klbl">Novos Seguidores</div><div class="kval">+52</div><div class="ksub">líquido +36 (+58 −18)</div><span class="ktag k-up">+13%</span></div>
+        <div class="kpi k-bl"><div class="klbl">Posts Publicados</div><div class="kval">16</div><div class="ksub">cadência 3×/semana</div><span class="ktag k-up">vs 3 em mai</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Performance de Conteúdo · Junho 2026</div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="card"><div class="card-h">Orgânico vs Pago</div><div class="ch ch260"><canvas id="j-donut"></canvas></div></div>
+        <div class="card"><div class="card-h">Top 10 Posts por Alcance</div><div class="ch ch260"><canvas id="j-posts"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h">Todos os Posts — Junho 2026 <span style="color:var(--mu);font-weight:500">(16 publicações)</span></div>
+        <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr><th>Post</th><th>Data</th><th>Formato</th><th>Alcance</th><th>Curtidas</th><th>Comp.</th></tr></thead>
+          <tbody>
+            <tr><td>O The Cure não toca música, ele desenha… <span class="flag f-top">TOP</span><span class="flag f-pago">PAGO</span></td><td>Sex 5/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">12.956</span><div class="bar-mini"><div class="bar-fill" style="width:100%;background:var(--bl)"></div></div></td><td><span class="stv">183</span></td><td><span class="stv">4</span></td></tr>
+            <tr><td>Num dia dos namorados frio como esse… <span class="flag f-pago">PAGO</span></td><td>Sex 12/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">2.170</span><div class="bar-mini"><div class="bar-fill" style="width:16.7%;background:var(--bl)"></div></div></td><td><span class="stv">64</span></td><td><span class="stv">12</span></td></tr>
+            <tr><td>Video agora completinho que quem gostou…</td><td>Dom 14/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">443</span><div class="bar-mini"><div class="bar-fill" style="width:3.4%;background:var(--bl)"></div></div></td><td><span class="stv">24</span></td><td><span class="stv">5</span></td></tr>
+            <tr><td>O sistema quer que você produza. A arte…</td><td>Sex 19/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">419</span><div class="bar-mini"><div class="bar-fill" style="width:3.2%;background:var(--bl)"></div></div></td><td><span class="stv">53</span></td><td><span class="stv">1</span></td></tr>
+            <tr><td>Parte final. Num dia dos namorados frio…</td><td>Dom 14/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">375</span><div class="bar-mini"><div class="bar-fill" style="width:2.9%;background:var(--bl)"></div></div></td><td><span class="stv">30</span></td><td><span class="stv">3</span></td></tr>
+            <tr><td>Parte 2 do vídeo dos namorados…</td><td>Sáb 13/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">309</span><div class="bar-mini"><div class="bar-fill" style="width:2.4%;background:var(--bl)"></div></div></td><td><span class="stv">28</span></td><td><span class="stv">3</span></td></tr>
+            <tr><td>Às vezes a coisa mais honesta que você…</td><td>Seg 22/jun</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">234</span><div class="bar-mini"><div class="bar-fill" style="width:1.8%;background:var(--or)"></div></div></td><td><span class="stv">73</span></td><td><span class="stv">1</span></td></tr>
+            <tr><td>As ruas de madrugada entendem mais d…</td><td>Seg 8/jun</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">212</span><div class="bar-mini"><div class="bar-fill" style="width:1.6%;background:var(--or)"></div></div></td><td><span class="stv">42</span></td><td><span class="stv">2</span></td></tr>
+            <tr><td>A cidade não para, mas ela sangra ruído…</td><td>Qua 3/jun</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">208</span><div class="bar-mini"><div class="bar-fill" style="width:1.6%;background:var(--pu)"></div></div></td><td><span class="stv">36</span></td><td><span class="stv">0</span></td></tr>
+            <tr><td>O fim do mundo não chega com um estr…</td><td>Ter 2/jun</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">191</span><div class="bar-mini"><div class="bar-fill" style="width:1.5%;background:var(--or)"></div></div></td><td><span class="stv">47</span></td><td><span class="stv">0</span></td></tr>
+            <tr><td>começou. 🖤🦇 ativa o sininho…</td><td>Dom 21/jun</td><td><span class="badge b-reel">Reel</span></td><td><span class="stv">159</span><div class="bar-mini"><div class="bar-fill" style="width:1.2%;background:var(--bl)"></div></div></td><td><span class="stv">15</span></td><td><span class="stv">1</span></td></tr>
+            <tr><td>Cada cicatriz tem uma história. Cada mú…</td><td>Seg 15/jun</td><td><span class="badge b-foto">Foto</span></td><td><span class="stv">161</span><div class="bar-mini"><div class="bar-fill" style="width:1.2%;background:var(--or)"></div></div></td><td><span class="stv">38</span></td><td><span class="stv">0</span></td></tr>
+            <tr><td>a primeira vez foi um acidente…</td><td>Ter 23/jun</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">132</span><div class="bar-mini"><div class="bar-fill" style="width:1%;background:var(--pu)"></div></div></td><td><span class="stv">31</span></td><td><span class="stv">0</span></td></tr>
+            <tr><td>Gritar é fácil. Documentar o vazio exige…</td><td>Qua 17/jun</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">134</span><div class="bar-mini"><div class="bar-fill" style="width:1%;background:var(--pu)"></div></div></td><td><span class="stv">26</span></td><td><span class="stv">2</span></td></tr>
+            <tr><td>Não é sobre estar triste. É sobre o que vo…</td><td>Qua 10/jun</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">124</span><div class="bar-mini"><div class="bar-fill" style="width:0.9%;background:var(--pu)"></div></div></td><td><span class="stv">26</span></td><td><span class="stv">1</span></td></tr>
+            <tr><td>A dor que virou estrutura. Ian Curtis prov…</td><td>Qua 24/jun</td><td><span class="badge b-carr">Carrossel</span></td><td><span class="stv">13</span><div class="bar-mini"><div class="bar-fill" style="width:0.1%;background:var(--pu)"></div></div></td><td><span class="stv">7</span></td><td><span class="stv">0</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Público · Período Personalizado</div>
+      <div class="g3">
+        <div class="card"><div class="card-h">Gênero</div><div class="ch ch200"><canvas id="j-genero"></canvas></div></div>
+        <div class="card span2"><div class="card-h">Faixa Etária</div><div class="ch ch200"><canvas id="j-idade"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Tráfego Pago · Meta Ads · 1–24 Jun 2026</div>
+      <div class="g5" style="margin-bottom:12px">
+        <div class="kpi k-rd"><div class="klbl">Total Investido</div><div class="kval">R$169</div><div class="ksub">de R$300 disponíveis</div><span class="ktag k-nl">R$9/dia</span></div>
+        <div class="kpi k-gn"><div class="klbl">Visitas ao Perfil</div><div class="kval">338</div><div class="ksub">remarketing construído</div><span class="ktag k-up">CPV R$0,50 médio</span></div>
+        <div class="kpi k-bl"><div class="klbl">Melhor CPV</div><div class="kval">R$0,31</div><div class="ksub">AD04 · The Cure</div><span class="ktag k-up">Campeão</span></div>
+        <div class="kpi k-bl"><div class="klbl">Melhor CTR</div><div class="kval">2,14%</div><div class="ksub">AD04 · The Cure</div></div>
+        <div class="kpi k-bl"><div class="klbl">Conv. Visita→Seg.</div><div class="kval">15,4%</div><div class="ksub">338 visitas → +52 segs</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="card"><div class="card-h">Visitas ao Perfil por Anúncio</div><div class="ch ch240"><canvas id="j-advis"></canvas></div></div>
+        <div class="card"><div class="card-h">CPV — Custo por Visita (R$)</div><div class="ch ch240"><canvas id="j-adcpv"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h">Tabela Completa de Anúncios</div>
+        <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr><th>Anúncio</th><th>Status</th><th>Gasto</th><th>Visitas</th><th>CPV</th><th>Impressões</th><th>CTR</th><th>CPM</th><th>Freq.</th></tr></thead>
+          <tbody>
+            <tr><td><strong>AD 04</strong> · The Cure não toca música…</td><td><span class="sts sts-on">Ativo</span></td><td>R$78,59</td><td><strong>253</strong></td><td class="cpv-g">R$0,31</td><td>12.720</td><td>2,14%</td><td>R$6,18</td><td>1,07</td></tr>
+            <tr><td><strong>AD 06</strong> · Dia dos Namorados…</td><td><span class="sts sts-on">Ativo</span></td><td>R$6,07</td><td>6</td><td class="cpv-b">R$1,01</td><td>1.366</td><td>0,44%</td><td>R$4,44</td><td>1,00</td></tr>
+            <tr><td><strong>AD 02</strong> · Vídeo Divulgação Metástase</td><td><span class="sts sts-off">Pausado</span></td><td>R$72,97</td><td>65</td><td class="cpv-b">R$1,12</td><td>16.818</td><td>1,49%</td><td>R$4,34</td><td>1,72</td></tr>
+            <tr><td><strong>AD 01</strong> · Molchat Doma como o trio…</td><td><span class="sts sts-off">Pausado</span></td><td>R$9,22</td><td>12</td><td class="cpv-m">R$0,77</td><td>2.246</td><td>1,56%</td><td>R$4,11</td><td>1,23</td></tr>
+            <tr><td><strong>AD 03</strong> · O Post-punk não é nostalgia</td><td><span class="sts sts-off">Pausado</span></td><td>R$2,44</td><td>2</td><td class="cpv-b">R$1,22</td><td>605</td><td>0,66%</td><td>R$4,03</td><td>1,09</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="stitle">Análise & Recomendações · Junho 2026</div>
+      <div class="ig2">
+        <div class="ic ok"><h4>✔ O que funcionou</h4><ul><li><strong>AD04 (The Cure)</strong> — 253 visitas, CPV R$0,31, CTR 2,14%</li><li>Série dos Namorados (3 partes) — ~2,9K alcance, 12 comp.</li><li>Foto "Às vezes honesta" — 73 curtidas orgânicas (top do mês)</li><li>CPM abaixo de R$7 em todos os ads (média BR: R$8–15)</li></ul></div>
+        <div class="ic al"><h4>⚠ Atenção</h4><ul><li>AD06 (Namorados) — ativo, só 6 visitas, CPV R$1,01. Trocar</li><li>AD02 — frequência 1,72, CPV R$1,12. Pausado corretamente</li><li>Orgânico sem pago: 200–450 por Reel. Ads essenciais agora</li><li>+52 segs: bom ritmo, meta 5K exige Fase 2 acelerada</li></ul></div>
+        <div class="ic inf"><h4>📋 Ações para Julho (Fase 2)</h4><ul><li>Virar campanha para <strong>pré-save Spotify</strong> (Metástase 2 · 31/jul)</li><li>Novo criativo: Reel "O sistema" (419 orgânico, alto potencial)</li><li>Lookalike dos visitantes de junho (remarketing já construído)</li><li>Pitch editorial Spotify até <strong>03/07</strong> (4 semanas antes)</li></ul></div>
+        <div class="ic inf"><h4>📊 Benchmarks Atingidos</h4><ul><li>CPV meta ≤R$0,50 · <strong>AD04 = R$0,31 ✔</strong></li><li>CTR awareness 0,5–1,5% · <strong>AD04 = 2,14% ✔</strong></li><li>CPM médio Brasil IG R$8–15 · <strong>todos ≤R$7 ✔</strong></li><li>Conv. visita→seguidor: <strong>15,4%</strong></li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pfooter">
+    <div><strong>HFF Solutions</strong> — Gestão de Tráfego & Social Media</div>
+    <div>Cliente: Jony Marcondes &nbsp;·&nbsp; Relatórios 2026 &nbsp;·&nbsp; Gerado em Jun/2026</div>
+  </footer>
+</div>
+
+<script>
+/* ─── AUTH ─────────────────────────────────── */
+const CREDS={hff:'jony2026',jony:'hff2026'};
+function doLogin(){
+  const u=document.getElementById('iu').value.trim().toLowerCase();
+  const p=document.getElementById('ip').value;
+  const err=document.getElementById('lerr');
+  if(CREDS[u]===p){
+    sessionStorage.setItem('ja',u);
+    document.getElementById('login-wrap').style.display='none';
+    const app=document.getElementById('app');
+    app.style.display='flex';app.style.flexDirection='column';
+    document.getElementById('ulabel').textContent=u==='hff'?'HFF Solutions':'Jony Marcondes';
+    err.style.display='none';
+    moveSlider('geral');
+    if(!inited.geral){initCharts('geral');inited.geral=true}
+    animKpis(document.getElementById('tc-geral'));
+  }else{
+    err.style.display='block';
+    document.getElementById('ip').value='';
+    setTimeout(()=>{err.style.display='none'},3000);
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('ja');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('ip').value='';
+}
+['iu','ip'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()}));
+window.addEventListener('DOMContentLoaded',()=>{
+  const s=sessionStorage.getItem('ja');
+  if(s&&CREDS[s]!==undefined){
+    document.getElementById('login-wrap').style.display='none';
+    const app=document.getElementById('app');
+    app.style.display='flex';app.style.flexDirection='column';
+    document.getElementById('ulabel').textContent=s==='hff'?'HFF Solutions':'Jony Marcondes';
+    moveSlider('geral');
+    if(!inited.geral){initCharts('geral');inited.geral=true}
+    animKpis(document.getElementById('tc-geral'));
+  }
+});
+
+/* ─── TABS ──────────────────────────────────── */
+let cur='geral';
+const inited={};
+function sw(t){
+  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('act'));
+  document.querySelectorAll('.tbtn').forEach(e=>e.classList.remove('act'));
+  document.getElementById('tc-'+t).classList.add('act');
+  document.getElementById('tb-'+t).classList.add('act');
+  moveSlider(t);
+  cur=t;
+  if(!inited[t]){initCharts(t);inited[t]=true;animKpis(document.getElementById('tc-'+t))}
+}
+function moveSlider(t){
+  const btn=document.getElementById('tb-'+t);
+  const bar=document.getElementById('tabsbar');
+  const slider=document.getElementById('slider');
+  if(!btn||!slider)return;
+  const br=btn.getBoundingClientRect();
+  const barr=bar.getBoundingClientRect();
+  slider.style.left=(br.left-barr.left+bar.scrollLeft)+'px';
+  slider.style.width=br.width+'px';
+}
+
+/* ─── COUNT-UP ──────────────────────────────── */
+function animKpis(container){
+  container.querySelectorAll('[data-target]').forEach(el=>{
+    const target=parseFloat(el.dataset.target);
+    const div=parseFloat(el.dataset.div||1);
+    const suffix=el.dataset.suffix||'';
+    const decimals=div>1?1:0;
+    const val=target/div;
+    let start=null;
+    const dur=800;
+    function step(ts){
+      if(!start)start=ts;
+      const prog=Math.min((ts-start)/dur,1);
+      const ease=1-Math.pow(1-prog,3);
+      const cur=(val*ease);
+      el.textContent=(decimals?cur.toFixed(decimals):Math.round(cur))+suffix;
+      if(prog<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+/* ─── CHARTS ────────────────────────────────── */
+Chart.defaults.color='#5a6e7a';
+Chart.defaults.borderColor='#1e2d3d';
+Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+const BL='#1e8ec4',RD='#c02828',GN='#27a96e',OR='#d08820',PU='#8844d0';
+
+function initCharts(t){
+  if(t==='geral')initGeral();
+  if(t==='maio')initMaio();
+  if(t==='junho')initJunho();
+}
+
+function mkChart(id,cfg){return new Chart(document.getElementById(id),cfg)}
+
+/* GERAL */
+function initGeral(){
+  // MoM
+  mkChart('g-mom',{type:'bar',data:{
+    labels:['Visualizações','Alcance','Interações'],
+    datasets:[
+      {label:'Maio 2026',data:[6086,852,493],backgroundColor:'rgba(90,110,122,.35)',borderColor:'rgba(90,110,122,.6)',borderWidth:1,borderRadius:4},
+      {label:'Junho 2026',data:[28937,15000,1600],backgroundColor:BL+'aa',borderColor:BL,borderWidth:1,borderRadius:4}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{padding:16,font:{size:11},usePointStyle:true}},tooltip:{mode:'index',intersect:false}},scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+  // Posts
+  mkChart('g-posts',{type:'bar',data:{
+    labels:['Maio','Junho'],
+    datasets:[{data:[3,16],backgroundColor:['rgba(90,110,122,.4)',BL+'99'],borderColor:['rgba(90,110,122,.7)',BL],borderWidth:1,borderRadius:5}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:20,ticks:{stepSize:4},grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+  // Donut
+  mkChart('g-donut',{type:'doughnut',data:{labels:['Orgânico','Pago'],datasets:[{data:[14903,14037],backgroundColor:[BL+'cc',RD+'cc'],borderColor:'#0d0f14',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11},usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString('pt-BR')} (${((c.parsed/28940)*100).toFixed(1)}%)`}}}}});
+  // Genero
+  mkChart('g-genero',{type:'doughnut',data:{labels:['Mulheres','Homens'],datasets:[{data:[57.4,42.6],backgroundColor:[RD+'cc',BL+'cc'],borderColor:'#0d0f14',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11},usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}%`}}}}});
+  // Idade
+  mkChart('g-idade',{type:'bar',data:{labels:['13–17','18–24','25–34','35–44','45–54','55–64','65+'],datasets:[{data:[1.2,15.3,47.2,24.1,7.6,3.2,1.4],backgroundColor:[BL+'20',BL+'50',BL+'cc',BL+'88',BL+'55',BL+'33',BL+'22'],borderColor:BL,borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}% do público`}}},scales:{y:{ticks:{callback:v=>v+'%'},max:55,grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+}
+
+/* MAIO */
+function initMaio(){
+  const labs=['Reel 29/mai','Carr. 27/mai','Foto 25/mai','Foto 25/mai','Foto 29/mai'];
+  const cols=[BL+'cc',PU+'cc',OR+'cc',OR+'88',OR+'66'];
+  mkChart('m-views',{type:'bar',data:{labels:labs,datasets:[{data:[1000,724,556,205,168],backgroundColor:cols,borderColor:[BL,PU,OR,OR,OR],borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v>=1000?(v/1000)+'K':v},grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+  mkChart('m-curt',{type:'bar',data:{labels:labs,datasets:[{data:[54,30,51,14,12],backgroundColor:cols,borderColor:[BL,PU,OR,OR,OR],borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+}
+
+/* JUNHO */
+function initJunho(){
+  mkChart('j-donut',{type:'doughnut',data:{labels:['Orgânico','Pago'],datasets:[{data:[14903,14037],backgroundColor:[BL+'cc',RD+'cc'],borderColor:'#0d0f14',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:11},usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString('pt-BR')} (${((c.parsed/28940)*100).toFixed(1)}%)`}}}}});
+  mkChart('j-posts',{type:'bar',data:{
+    labels:['The Cure','Namorados','Vídeo','O sistema','P. final','Parte 2','Às vezes','Ruas','A cidade','Fim mundo'],
+    datasets:[
+      {label:'Alcance',data:[12956,2170,443,419,375,309,234,212,208,191],backgroundColor:BL+'88',borderColor:BL,borderWidth:1,borderRadius:3,yAxisID:'y'},
+      {label:'Curtidas',data:[183,64,24,53,30,28,73,42,36,47],type:'line',borderColor:RD,backgroundColor:'transparent',tension:.3,pointRadius:4,pointBackgroundColor:RD,yAxisID:'y2'}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{padding:12,font:{size:10},usePointStyle:true}},tooltip:{mode:'index',intersect:false}},scales:{x:{ticks:{font:{size:10},maxRotation:30},grid:{display:false}},y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(1)+'K':v},grid:{color:'rgba(30,45,61,.5)'}},y2:{position:'right',grid:{drawOnChartArea:false}}}}});
+  mkChart('j-genero',{type:'doughnut',data:{labels:['Mulheres','Homens'],datasets:[{data:[57.4,42.6],backgroundColor:[RD+'cc',BL+'cc'],borderColor:'#0d0f14',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11},usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}%`}}}}});
+  mkChart('j-idade',{type:'bar',data:{labels:['13–17','18–24','25–34','35–44','45–54','55–64','65+'],datasets:[{data:[1.2,15.3,47.2,24.1,7.6,3.2,1.4],backgroundColor:[BL+'20',BL+'50',BL+'cc',BL+'88',BL+'55',BL+'33',BL+'22'],borderColor:BL,borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'},max:55,grid:{color:'rgba(30,45,61,.5)'}},x:{grid:{display:false}}}}});
+  mkChart('j-advis',{type:'bar',data:{labels:['AD04 The Cure','AD02 Metástase','AD01 Molchat','AD06 Namorados','AD03 Post-punk'],datasets:[{data:[253,65,12,6,2],backgroundColor:[GN+'99',OR+'99',BL+'99',RD+'99','#60606099'],borderColor:[GN,OR,BL,RD,'#606060'],borderWidth:1,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(30,45,61,.5)'}},y:{grid:{display:false}}}}});
+  mkChart('j-adcpv',{type:'bar',data:{labels:['AD04 The Cure','AD01 Molchat','AD06 Namorados','AD02 Metástase','AD03 Post-punk'],datasets:[{data:[0.31,0.77,1.01,1.12,1.22],backgroundColor:[GN+'99',BL+'99',OR+'99',RD+'99','#c0202099'],borderColor:[GN,BL,OR,RD,'#c02020'],borderWidth:1,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` R$${c.parsed.x.toFixed(2)} por visita`}}},scales:{x:{ticks:{callback:v=>'R$'+v.toFixed(2)},max:1.5,grid:{color:'rgba(30,45,61,.5)'}},y:{grid:{display:false}}}}});
+}
+</script>
+</body>
+</html>
